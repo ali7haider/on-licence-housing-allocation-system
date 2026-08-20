@@ -122,6 +122,7 @@ def generate_sample_data(
 def _generate_rhus(random: Random, count: int) -> list[RHU]:
     """Create a small, varied collection of fictional hostels."""
     rhus: list[RHU] = []
+    used_names: set[str] = set()
     
     # Use UK place names for variety
     places = ["Durham", "Chester-le-Street", "Consett", "Stanley", "Spennymoor", 
@@ -131,12 +132,16 @@ def _generate_rhus(random: Random, count: int) -> list[RHU]:
     
     for number in range(1, count + 1):
         place = random.choice(places)
+        name = f"{place} RHU {random.choice(['Lodge', 'House', 'Centre', 'Residence', 'Place'])}"
+        while name in used_names:
+            name = f"{place} RHU {random.choice(['Lodge', 'House', 'Centre', 'Residence', 'Place'])} {number}"
+        used_names.add(name)
         accepted_genders = random.choice(
             [[Gender.MALE.value], [Gender.FEMALE.value], [Gender.MIXED.value]]
         )
         rhus.append(
             RHU(
-                name=f"{place} RHU {random.choice(['Lodge', 'House', 'Centre', 'Residence', 'Place'])}",
+                name=name,
                 address=f"{number * 10} {random.choice(['Main', 'Station', 'Church', 'Market', 'North', 'South', 'East', 'West'])} Road, {place}, DH{number} 1AA",
                 phone=f"0191 {random.randint(200, 999)} {random.randint(1000, 9999)}",
                 email=f"rhu{number}@example.org",
