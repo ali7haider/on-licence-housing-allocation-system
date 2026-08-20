@@ -117,13 +117,21 @@ class AllocationView(QWidget):
         return self.data_store.get_licensee(licensee_id) if licensee_id else None
 
     def _rank_selected_licensee(self, *_: object) -> None:
-        """Populate the RHU table and shortlist for the selected licensee."""
+        """Populate the RHU table and shortlist for the selected licensee.
+
+        Rebuilding the table clears Qt's row selection, so the previously
+        selected RHU (if any) is restored afterwards. Without this, selecting
+        a row, then adding it to the shortlist, silently deselects it and the
+        next "Allocate selected RHU" click does nothing.
+        """
+        previously_selected_rhu = self._selected_rhu_name()
         self.ranking_table.setRowCount(0)
         self.shortlist.clear()
         licensee = self._selected_licensee()
         if licensee is None:
             return
 
+        restore_row = -1
         for row, (rhu, score, warnings, cost) in enumerate(rank_rhus_for(licensee, self.data_store.list_rhus())):
             self.ranking_table.insertRow(row)
             name_item = QTableWidgetItem(rhu.name)
@@ -137,6 +145,11 @@ class AllocationView(QWidget):
                 QTableWidgetItem("\n".join(warnings) if warnings else "No conflict warnings"),
             )
             self.ranking_table.resizeRowToContents(row)
+            if rhu.name == previously_selected_rhu:
+                restore_row = row
+
+        if restore_row >= 0:
+            self.ranking_table.setCurrentCell(restore_row, 0)
 
         for rhu_name in licensee.shortlist:
             self.shortlist.addItem(rhu_name)
