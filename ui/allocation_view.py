@@ -223,5 +223,7 @@ class AllocationView(QWidget):
             QMessageBox.warning(self, "Could not allocate licensee", str(error))
             return
         QMessageBox.information(self, "Allocation saved", f"{licensee.name} is allocated to {rhu.name}.")
-        self._rank_selected_licensee()
+        self.licensee_picker.setCurrentIndex(0)
+        self.ranking_table.setRowCount(0)
+        self.shortlist.clear()
         self.allocation_changed.emit()
