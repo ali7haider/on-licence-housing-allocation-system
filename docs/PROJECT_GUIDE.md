@@ -236,7 +236,7 @@ Matching rule registry and ranking algorithm.
 - `rank_rhus_for()` iterates through every RHU and every rule.
 - Each result contains the RHU, total score, warnings, and daily cost.
 - Results are sorted by score descending.
-- Capacity pressure subtracts 100 points when standard capacity is full, while emergency capacity remains available for actual allocation.
+- Capacity does not affect suitability scores. It is enforced only when allocating: standard and emergency capacity together determine whether a placement is possible.
 - Hard requirement mismatches receive a large penalty so they appear at the bottom without being filtered out.
 
 The rule list is designed for extension: adding a matching criterion normally requires adding a tuple and corresponding editor values, not rewriting the ranking loop.

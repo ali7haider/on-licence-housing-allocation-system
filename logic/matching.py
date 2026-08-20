@@ -105,10 +105,6 @@ def rank_rhus_for(licensee: Licensee, rhus: Iterable[RHU]) -> list[tuple[RHU, in
             if outcome.is_conflict:
                 warnings.append(outcome.reason)
 
-        if len(rhu.resident_ids) >= rhu.capacity:
-            score -= 100
-            warnings.append("RHU has no standard beds available")
-
         ranked_rhus.append((rhu, score, warnings, rhu.cost_per_bed_per_day))
 
     return sorted(ranked_rhus, key=lambda result: result[1], reverse=True)
