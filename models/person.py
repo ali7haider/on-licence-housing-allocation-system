@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from models.enums import Category, Gender, LicenseeState
+from models.history import LicenceBreach
 
 
 @dataclass
@@ -30,6 +31,7 @@ class Licensee(Person):
     current_rhu_name: str | None = None
     housing_exit_date: date | None = None
     shortlist: list[str] = field(default_factory=list)
+    breaches: list[LicenceBreach] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         """Convert valid string values into the model's enum types."""

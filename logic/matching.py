@@ -46,6 +46,8 @@ MATCHING_RULES: tuple[tuple[str, str, MatchAttribute], ...] = (
     ("victim_exclusion_zones", "nearby_victim_zones", ZoneAttribute("Victim exclusion zones", 50)),
     ("school_exclusion_zones", "nearby_school_zones", ZoneAttribute("School exclusion zones", 50)),
     ("associate_exclusion_zones", "nearby_associate_zones", ZoneAttribute("Associate exclusion zones", 40)),
+    ("specific_prisoner_exclusions", "specific_prisoner_exclusions",
+     ZoneAttribute("Specific prisoner exclusions", 45)),
     ("prior_rhu_experience", "prior_rhu_experience", TextAttribute("Prior RHU experience", 4)),
 
     # -- Student Suggested 1: whether the RHU can support a licensee who is

@@ -69,6 +69,8 @@ class LicenseeEditor(QDialog):
         self.licence_end_date_input = _date_input(date.today())
         self.notes_input = QPlainTextEdit()
         self.notes_input.setFixedHeight(70)
+        self.breaches_input = QPlainTextEdit()
+        self.breaches_input.setFixedHeight(90)
 
         form.addRow("Name", self.name_input)
         form.addRow("Prison role ID", self.role_id_input)
@@ -80,6 +82,7 @@ class LicenseeEditor(QDialog):
         form.addRow("Expected end of licence", self.licence_end_date_input)
         form.addRow("State", self.state_input)
         form.addRow("Notes", self.notes_input)
+        form.addRow("Licence-condition breaches", self.breaches_input)
         form_layout.addLayout(form)
 
         self.attribute_editor = AttributeEditor(LICENSEE_ATTRIBUTE_DEFINITIONS)
@@ -114,6 +117,7 @@ class LicenseeEditor(QDialog):
         self.release_date_input.setDate(QDate(licensee.release_date))
         self.licence_end_date_input.setDate(QDate(licensee.licence_end_date))
         self.notes_input.setPlainText(licensee.notes)
+        self.breaches_input.setPlainText("\n".join(breach.details for breach in licensee.breaches))
         self.attribute_editor.set_values(licensee.attributes)
 
     def _save(self) -> None:
@@ -125,6 +129,11 @@ class LicenseeEditor(QDialog):
             return
 
         existing = self.licensee
+        existing_breaches = list(existing.breaches) if existing else []
+        existing_details = {breach.details for breach in existing_breaches}
+        entered_breaches = {
+            line.strip() for line in self.breaches_input.toPlainText().splitlines() if line.strip()
+        }
         record = Licensee(
             name=name,
             prison_role_id=role_id,
@@ -140,6 +149,7 @@ class LicenseeEditor(QDialog):
             current_rhu_name=existing.current_rhu_name if existing else None,
             housing_exit_date=existing.housing_exit_date if existing else None,
             shortlist=list(existing.shortlist) if existing else [],
+            breaches=existing_breaches,
         )
         try:
             if existing is None:
@@ -149,6 +159,8 @@ class LicenseeEditor(QDialog):
         except (KeyError, ValueError) as error:
             QMessageBox.warning(self, "Could not save licensee", str(error))
             return
+        for details in sorted(entered_breaches - existing_details):
+            self.data_store.record_breach(record.prison_role_id, details)
         self.accept()
     def _delete(self) -> None:
         """Confirm, then remove this licensee and close the editor as changed."""

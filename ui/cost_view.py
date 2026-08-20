@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from logic.costs import add_day, is_overspending, mark_paid
+from logic.costs import add_day, is_overspending, mark_paid, projected_cost
 from logic.data_store import DataStore
 from models.rhu import RHU
 
@@ -56,7 +56,15 @@ class CostView(QWidget):
 
         self.cost_tree = QTreeWidget()
         self.cost_tree.setHeaderLabels(
-            ["RHU", "Residents", "Cost/bed/day", "Total owed", "Last paid", "Status"]
+            [
+                "RHU",
+                "Residents",
+                "Cost/bed/day",
+                "Total owed",
+                "Projected 30 days",
+                "Last paid",
+                "Status",
+            ]
         )
         self.cost_tree.setAlternatingRowColors(True)
         self.cost_tree.currentItemChanged.connect(self._update_pay_button)
@@ -68,18 +76,30 @@ class CostView(QWidget):
         budget = self.budget_input.value()
         for rhu in self.data_store.list_rhus():
             overspending = is_overspending(rhu, budget)
+            forecast = projected_cost(rhu)
+            forecast_overspending = forecast > budget
+            if overspending:
+                status = "Over budget now"
+            elif forecast_overspending:
+                status = "Projected over budget"
+            else:
+                status = "Within budget"
             item = QTreeWidgetItem(
                 [
                     rhu.name,
                     str(len(rhu.resident_ids)),
                     f"£{rhu.cost_per_bed_per_day:.2f}",
                     f"£{rhu.total_owed:.2f}",
+                    f"£{forecast:.2f}",
                     rhu.last_payment_date.strftime("%d %b %Y"),
-                    "Over budget" if overspending else "Within budget",
+                    status,
                 ]
             )
             item.setData(0, Qt.ItemDataRole.UserRole, rhu.name)
-            item.setForeground(5, QColor("red") if overspending else QColor("green"))
+            item.setForeground(
+                6,
+                QColor("red") if overspending or forecast_overspending else QColor("green"),
+            )
             self.cost_tree.addTopLevelItem(item)
         self.cost_tree.resizeColumnToContents(0)
         self._update_pay_button()

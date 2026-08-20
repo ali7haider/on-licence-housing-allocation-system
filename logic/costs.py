@@ -23,3 +23,8 @@ def mark_paid(rhu: RHU) -> float:
 def is_overspending(rhu: RHU, budget: float) -> bool:
     """Return whether the RHU's running total is above the supplied budget."""
     return rhu.total_owed > budget
+
+
+def projected_cost(rhu: RHU, days: int = 30) -> float:
+    """Estimate future cost from the current resident count and daily rate."""
+    return rhu.cost_per_bed_per_day * len(rhu.resident_ids) * days

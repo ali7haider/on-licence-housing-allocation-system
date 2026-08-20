@@ -1,8 +1,10 @@
 """In-memory storage and CRUD operations for the pilot application."""
 
 from collections.abc import Iterable
+from datetime import datetime
 
 from models.enums import LicenseeState
+from models.history import AuditEvent, LicenceBreach
 from models.person import Licensee
 from models.rhu import RHU
 
@@ -22,6 +24,7 @@ class DataStore:
     ) -> None:
         self.licensees = list(licensees or [])
         self.rhus = list(rhus or [])
+        self.audit_events: list[AuditEvent] = []
 
     # -- Licensees ---------------------------------------------------------
 
@@ -31,6 +34,9 @@ class DataStore:
             raise ValueError(f"A licensee with ID {licensee.prison_role_id} already exists.")
         self._validate_residency(licensee)
         self.licensees.append(licensee)
+        self.audit_events.append(
+            AuditEvent(datetime.now(), licensee.prison_role_id, "Licensee created", to_state=licensee.state.value)
+        )
 
     def update_licensee(self, licensee: Licensee) -> None:
         """Replace an existing licensee, keeping RHU residency consistent.
@@ -40,10 +46,23 @@ class DataStore:
         so the bed is freed and costs stop accruing for them.
         """
         index = self._licensee_index(licensee.prison_role_id)
+        previous = self.licensees[index]
         self._validate_residency(licensee)
         if licensee.state != LicenseeState.ALLOCATED and licensee.current_rhu_name:
             self._release_rhu_link(licensee)
         self.licensees[index] = licensee
+        if previous.state != licensee.state or previous.current_rhu_name != licensee.current_rhu_name:
+            self.audit_events.append(
+                AuditEvent(
+                    datetime.now(),
+                    licensee.prison_role_id,
+                    "Licensee status or placement updated",
+                    from_state=previous.state.value,
+                    to_state=licensee.state.value,
+                    from_rhu=previous.current_rhu_name,
+                    to_rhu=licensee.current_rhu_name,
+                )
+            )
 
     def delete_licensee(self, prison_role_id: str) -> None:
         """Remove a licensee by prison role ID, releasing their RHU bed first."""
@@ -51,6 +70,7 @@ class DataStore:
         if licensee is not None and licensee.current_rhu_name:
             self._release_rhu_link(licensee)
         del self.licensees[self._licensee_index(prison_role_id)]
+        self.audit_events.append(AuditEvent(datetime.now(), prison_role_id, "Licensee deleted"))
 
     def transition_licensee_state(self, prison_role_id: str, new_state: LicenseeState) -> None:
         """Move a licensee between Pending / Allocated / Exited.
@@ -68,9 +88,40 @@ class DataStore:
             raise ValueError(
                 f"{licensee.name} has no RHU on record. Assign one from the Allocation tab."
             )
+        old_state = licensee.state
+        old_rhu = licensee.current_rhu_name
         if new_state != LicenseeState.ALLOCATED and licensee.current_rhu_name:
             self._release_rhu_link(licensee)
         licensee.state = new_state
+        if old_state != new_state or old_rhu != licensee.current_rhu_name:
+            self.audit_events.append(
+                AuditEvent(
+                    datetime.now(),
+                    prison_role_id,
+                    "Licensee status changed",
+                    from_state=old_state.value,
+                    to_state=new_state.value,
+                    from_rhu=old_rhu,
+                    to_rhu=licensee.current_rhu_name,
+                )
+            )
+
+    def record_breach(self, prison_role_id: str, details: str) -> None:
+        """Add a dated licence-condition breach to a licensee's record."""
+        licensee = self.get_licensee(prison_role_id)
+        if licensee is None:
+            raise KeyError(f"No licensee with ID {prison_role_id} exists.")
+        cleaned_details = details.strip()
+        if not cleaned_details:
+            raise ValueError("A breach description is required.")
+        licensee.breaches.append(LicenceBreach(datetime.now(), cleaned_details))
+        self.audit_events.append(
+            AuditEvent(datetime.now(), prison_role_id, "Licence breach recorded", details=cleaned_details)
+        )
+
+    def list_audit_events(self) -> list[AuditEvent]:
+        """Return the chronological audit events recorded during this session."""
+        return list(self.audit_events)
 
     def list_licensees(self, state: LicenseeState | None = None) -> list[Licensee]:
         """Return all licensees, or only those in the requested state."""
@@ -131,18 +182,38 @@ class DataStore:
         if rhu is None:
             raise KeyError(f"No RHU named {rhu_name} exists.")
         if licensee.current_rhu_name == rhu.name:
+            old_state = licensee.state
             licensee.state = LicenseeState.ALLOCATED
             if licensee.housing_exit_date is None:
                 licensee.housing_exit_date = licensee.licence_end_date
+            if old_state != LicenseeState.ALLOCATED:
+                self.audit_events.append(
+                    AuditEvent(
+                        datetime.now(), prison_role_id, "Licensee allocated",
+                        from_state=old_state.value, to_state=LicenseeState.ALLOCATED.value,
+                        from_rhu=rhu.name, to_rhu=rhu.name,
+                    )
+                )
             return
         if len(rhu.resident_ids) >= rhu.capacity + rhu.emergency_capacity:
             raise ValueError(f"{rhu.name} has no standard or emergency bed available.")
+        old_rhu = licensee.current_rhu_name
+        old_state = licensee.state
         if licensee.current_rhu_name:
             self._release_rhu_link(licensee)
         rhu.resident_ids.append(licensee.prison_role_id)
         licensee.current_rhu_name = rhu.name
         licensee.state = LicenseeState.ALLOCATED
         licensee.housing_exit_date = licensee.licence_end_date
+        self.audit_events.append(
+            AuditEvent(
+                datetime.now(), prison_role_id, "Licensee allocated or transferred",
+                from_state=old_state.value,
+                to_state=LicenseeState.ALLOCATED.value,
+                from_rhu=old_rhu,
+                to_rhu=rhu.name,
+            )
+        )
 
     def record_incident(self, rhu_name: str, prison_role_id: str, details: str) -> None:
         """Record or replace a violence or disturbance report for a resident."""

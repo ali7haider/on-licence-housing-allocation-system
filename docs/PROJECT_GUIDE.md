@@ -194,7 +194,7 @@ Cost accrual is intentionally manual because the pilot provides an explicit Add 
 Operational reporting and text export.
 
 - `ReportView(QWidget)` displays a generated report.
-- `build_operational_report()` includes licensee state counts, RHU occupancy, costs owed, upcoming exits, and incident reports.
+- `build_operational_report()` includes licensee state counts, RHU occupancy, costs owed, a 30-day cost forecast, upcoming exits, incident reports, licence breaches, and audit history.
 - Generate report refreshes the preview.
 - Save report writes the visible report to a user-selected `.txt` file.
 
@@ -219,6 +219,8 @@ RHU operations:
 - `delete_rhu()` clears affected resident links and shortlist references.
 - `allocate_licensee()` allocates or transfers a licensee and updates both sides of the relationship.
 - `record_incident()` adds, replaces, or clears a resident incident.
+- `record_breach()` adds a dated licence-condition breach to a licensee and records it in the audit trail.
+- `list_audit_events()` returns status, placement, creation, deletion, and breach events recorded during the session.
 - `list_rhus()`, `search_rhus()`, and `get_rhu()` provide read access.
 
 Internal consistency rules:
@@ -227,6 +229,7 @@ Internal consistency rules:
 - Moving out of Allocated releases the RHU bed.
 - RHU capacity includes standard plus emergency capacity for allocation.
 - Deleting a licensee releases their bed.
+- Status and placement changes are retained as timestamped `AuditEvent` records for the operational report.
 
 ### `logic/matching.py`
 
@@ -248,6 +251,7 @@ Pure cost operations:
 - `add_day()` accrues one day for all current residents of an RHU.
 - `mark_paid()` returns the amount paid, resets the running total, and records today's date.
 - `is_overspending()` reports whether the total exceeds a supplied budget.
+- `projected_cost()` estimates the next 30 days from the current resident count and daily rate.
 
 ### `logic/releases.py`
 
@@ -258,7 +262,7 @@ Release-date helpers:
 
 ### `logic/reports.py`
 
-`build_operational_report()` converts current model objects into a plain-text operational report. It reports all three licensee states, RHU occupancy and cost, upcoming exits, and recorded incidents.
+`build_operational_report()` converts current model objects and audit events into a plain-text operational report. It reports all three licensee states, RHU occupancy and cost, a 30-day projection, upcoming exits, incidents, licence-condition breaches, and status/placement history.
 
 ### `logic/sample_data.py`
 
@@ -503,6 +507,7 @@ Implemented matching areas include:
 - Prior RHU experience.
 - Employment or training support.
 - Specific offending-trigger avoidance.
+- Specific prisoner exclusions, represented as prison role ID tags and matched against RHU exclusion tags.
 - Licence period.
 - Future Expansion 1, 2, and 3 placeholders.
 - Student Suggested 1: digital/electronic monitoring support.
@@ -550,7 +555,8 @@ Achieved in `logic/costs.py` and `ui/cost_view.py`.
 - Add a day's cost accrues totals for occupied RHUs.
 - Mark selected as paid resets an RHU total and records the payment date.
 - A per-RHU budget indicates “Over budget” or “Within budget”.
-- The system does not automatically forecast future overspending or accrue costs based on a real clock.
+- The report estimates the next 30 days using the current daily run rate. This is a simple projection rather than a full budget forecast.
+- Cost accrual remains a manual action rather than an automatic date-based process.
 
 ### Release management
 
@@ -572,6 +578,17 @@ Achieved in `RHU.incidents`, `DataStore.record_incident()`, `RHUListView._record
 - The RHU view indicates that an incident exists.
 - The operational report includes incident details.
 
+### Licence breaches and audit history
+
+Achieved in `models/history.py`, `models/person.py`, `logic/data_store.py`, `ui/licensee_editor.py`, and `logic/reports.py`.
+
+- Licence-condition breaches are entered in the licensee editor, one description per line.
+- Each new breach receives a timestamp and is included in the report.
+- Creation, deletion, status changes, allocations, transfers, and breach entries create `AuditEvent` records.
+- The audit history records the previous and new state and RHU where applicable.
+- The report displays the audit history for the current application session.
+- The history is intentionally in-memory, matching the pilot's overall storage design; it is lost when the application closes.
+
 ### Generated test data
 
 Achieved in `logic/sample_data.py`.
@@ -592,7 +609,8 @@ These are useful to mention in an assessment explanation because they show consc
 - Some generated records contain only a subset of all optional matching attributes; the editors still expose the full configured rule set.
 - Notes are stored but not scored by matching.
 - Reports export as text rather than PDF, spreadsheet, or email.
-- Cost accrual is a manual action rather than an automatic date-based process.
+- Cost accrual is a manual action rather than an automatic date-based process; the report does provide a simple 30-day run-rate projection.
+- Audit history is session-based and is not persisted after the application closes.
 - The optional licensee photo is not implemented.
 - The report is suitable for internal monitoring but does not provide a dedicated inter-agency export format.
 - RHU deletion requires residents to be transferred or exited first, which protects referential consistency.

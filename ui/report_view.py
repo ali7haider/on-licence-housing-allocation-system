@@ -46,6 +46,7 @@ class ReportView(QWidget):
             build_operational_report(
                 self.data_store.list_licensees(),
                 self.data_store.list_rhus(),
+                self.data_store.list_audit_events(),
             )
         )
 
