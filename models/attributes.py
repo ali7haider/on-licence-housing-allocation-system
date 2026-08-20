@@ -94,7 +94,7 @@ def _normalise_values(value: object) -> set[str]:
     if value is None:
         return set()
     if isinstance(value, str):
-        return {value.casefold()}
+        return {item.strip().casefold() for item in value.split(",") if item.strip()}
     if isinstance(value, Iterable):
         return {str(item).casefold() for item in value}
     return {str(value).casefold()}
