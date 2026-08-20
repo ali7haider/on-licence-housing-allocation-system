@@ -7,51 +7,37 @@ from models.enums import Category, Gender, LicenseeState
 from models.person import Licensee
 from models.rhu import RHU
 
-# Expanded UK English first names with regional diversity
 FIRST_NAMES = [
-    # Traditional English names
     "James", "William", "Charles", "George", "Thomas", "Henry", "Edward",
     "John", "Robert", "Richard", "David", "Michael", "Peter", "Paul",
     "Mary", "Elizabeth", "Margaret", "Anne", "Catherine", "Jane", "Sarah",
     "Emily", "Emma", "Charlotte", "Sophie", "Olivia", "Amelia", "Jessica",
-    # Scottish names
     "Hamish", "Fraser", "Dougal", "Alistair", "Iain", "Euan", "Angus",
     "Isla", "Fiona", "Morag", "Elspeth", "Catriona", "Eilidh", "Ailsa",
-    # Welsh names
     "Dafydd", "Gareth", "Rhys", "Owain", "Hywel", "Ieuan", "Geraint",
     "Ceri", "Sian", "Ffion", "Gwen", "Bethan", "Carys", "Eleri",
-    # Northern Irish names
     "Declan", "Niall", "Rory", "Ciaran", "Aidan", "Brendan", "Eamon",
     "Ciara", "Maeve", "Orla", "Niamh", "Aoife", "Roisin", "Siobhan",
-    # British Commonwealth influenced
     "Mohammed", "Zara", "Aisha", "Priya", "Rahul", "Amina", "Sadia",
     "Kofi", "Adeola", "Taiwo", "Maya", "Rani", "Sofia", "Ismail",
-    # Working class & regional names
     "Wayne", "Darren", "Craig", "Dean", "Lee", "Gary", "Barry", "Steve",
     "Tracy", "Donna", "Michelle", "Sharon", "Karen", "Angela", "Paula",
 ]
 
-# Expanded UK English last names with regional distribution
 LAST_NAMES = [
-    # Common English surnames
     "Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson",
     "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White",
     "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "Harrison",
     "Martin", "Thompson", "Morgan", "Cooper", "Anderson", "Hill", "Price",
     "Baker", "Cox", "Miller", "Parker", "Collins", "Edwards", "Morris",
-    # Scottish surnames
     "Campbell", "MacDonald", "Robertson", "Stewart", "Murray", "McDonald",
     "McKenzie", "MacKenzie", "Fraser", "Kennedy", "MacLeod", "Cameron",
-    # Welsh surnames
     "Davies", "Evans", "Thomas", "Jones", "Williams", "Lewis", "Morgan",
     "Roberts", "Hughes", "Edwards", "Griffiths", "Price", "Rees",
-    # Northern Irish surnames
     "O'Brien", "O'Connor", "Ryan", "Murray", "Kelly", "Kennedy", "Walsh",
     "McGuire", "McIntyre", "Armstrong", "Graham", "Adams", "McDonald",
-    # British aristocracy/landed gentry
     "Harrington", "Westminster", "Huntingdon", "Sheffield", "Chesterfield",
     "Dunmore", "Hamilton", "Sutherland", "Richmond", "Windsor",
-    # Occupations (common UK)
     "Thatcher", "Higgins", "Pritchard", "Pickering", "Whitehead", "Blackwell",
     "Underwood", "Goodwin", "Oakley", "Bentley", "Clayton", "Sawyer",
 ]
@@ -61,7 +47,6 @@ ZONE_TAGS = [
     "Market Place", "Station District", "University Quarter", "West End",
     "Cathedral Quarter", "Old Elvet", "Wharton Park", "Gilesgate",
     "South Street", "New Inn", "Dragonville", "Aykley Heads",
-    # Additional zones for variety
     "Shopping District", "Industrial Estate", "Residential Zone", "Business Park",
     "Leisure Complex", "Community Centre", "Hospital Area", "College Campus",
     "High Street", "Promenade", "Castle View", "Town Hall Square",
@@ -124,7 +109,6 @@ def _generate_rhus(random: Random, count: int) -> list[RHU]:
     rhus: list[RHU] = []
     used_names: set[str] = set()
     
-    # Use UK place names for variety
     places = ["Durham", "Chester-le-Street", "Consett", "Stanley", "Spennymoor", 
               "Newton Aycliffe", "Bishop Auckland", "Darlington", "Stockton", 
               "Middlesbrough", "Sunderland", "Newcastle", "Gateshead", 
