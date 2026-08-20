@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -45,6 +46,7 @@ class LicenseeEditor(QDialog):
         self.licensee = licensee
         self.setWindowTitle("Add Licensee" if licensee is None else "Edit Licensee")
         self.setMinimumWidth(560)
+        self.resize(680, 720)
         self._build_ui()
         if licensee is not None:
             self._load_licensee(licensee)
@@ -52,6 +54,8 @@ class LicenseeEditor(QDialog):
     def _build_ui(self) -> None:
         """Create the identifying fields, shared attribute editor, and actions."""
         layout = QVBoxLayout(self)
+        form_container = QWidget()
+        form_layout = QVBoxLayout(form_container)
         form = QFormLayout()
 
         self.name_input = QLineEdit()
@@ -76,10 +80,15 @@ class LicenseeEditor(QDialog):
         form.addRow("Expected end of licence", self.licence_end_date_input)
         form.addRow("State", self.state_input)
         form.addRow("Notes", self.notes_input)
-        layout.addLayout(form)
+        form_layout.addLayout(form)
 
         self.attribute_editor = AttributeEditor(LICENSEE_ATTRIBUTE_DEFINITIONS)
-        layout.addWidget(self.attribute_editor)
+        form_layout.addWidget(self.attribute_editor)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(form_container)
+        layout.addWidget(scroll_area, 1)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel

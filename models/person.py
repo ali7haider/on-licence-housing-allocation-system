@@ -30,3 +30,12 @@ class Licensee(Person):
     current_rhu_name: str | None = None
     housing_exit_date: date | None = None
     shortlist: list[str] = field(default_factory=list)
+
+    def __post_init__(self) -> None:
+        """Convert valid string values into the model's enum types."""
+        if not isinstance(self.gender, Gender):
+            self.gender = Gender(self.gender)
+        if not isinstance(self.category, Category):
+            self.category = Category(self.category)
+        if not isinstance(self.state, LicenseeState):
+            self.state = LicenseeState(self.state)

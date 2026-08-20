@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPlainTextEdit,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -40,6 +41,7 @@ class RHUEditor(QDialog):
         self.rhu = rhu
         self.setWindowTitle("Add RHU" if rhu is None else "Edit RHU")
         self.setMinimumWidth(560)
+        self.resize(680, 720)
         self._build_ui()
         if rhu is not None:
             self._load_rhu(rhu)
@@ -47,6 +49,8 @@ class RHUEditor(QDialog):
     def _build_ui(self) -> None:
         """Create the RHU-only form fields and shared matching-attribute form."""
         layout = QVBoxLayout(self)
+        form_container = QWidget()
+        form_layout = QVBoxLayout(form_container)
         form = QFormLayout()
 
         self.name_input = QLineEdit()
@@ -77,10 +81,15 @@ class RHUEditor(QDialog):
         form.addRow("Location X", self.location_x_input)
         form.addRow("Location Y", self.location_y_input)
         form.addRow("Notes", self.notes_input)
-        layout.addLayout(form)
+        form_layout.addLayout(form)
 
         self.attribute_editor = AttributeEditor(RHU_ATTRIBUTE_DEFINITIONS)
-        layout.addWidget(self.attribute_editor)
+        form_layout.addWidget(self.attribute_editor)
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(form_container)
+        layout.addWidget(scroll_area, 1)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel
