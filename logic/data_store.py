@@ -132,6 +132,8 @@ class DataStore:
             raise KeyError(f"No RHU named {rhu_name} exists.")
         if licensee.current_rhu_name == rhu.name:
             licensee.state = LicenseeState.ALLOCATED
+            if licensee.housing_exit_date is None:
+                licensee.housing_exit_date = licensee.licence_end_date
             return
         if len(rhu.resident_ids) >= rhu.capacity + rhu.emergency_capacity:
             raise ValueError(f"{rhu.name} has no standard or emergency bed available.")
@@ -140,6 +142,7 @@ class DataStore:
         rhu.resident_ids.append(licensee.prison_role_id)
         licensee.current_rhu_name = rhu.name
         licensee.state = LicenseeState.ALLOCATED
+        licensee.housing_exit_date = licensee.licence_end_date
 
     def record_incident(self, rhu_name: str, prison_role_id: str, details: str) -> None:
         """Record or replace a violence or disturbance report for a resident."""
