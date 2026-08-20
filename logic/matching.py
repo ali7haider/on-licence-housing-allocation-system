@@ -44,8 +44,14 @@ def rank_rhus_for(licensee: Licensee, rhus: Iterable[RHU]) -> list[tuple[RHU, in
         for licensee_key, rhu_key, attribute in MATCHING_RULES:
             rhu_value = rhu.attributes.get(rhu_key)
             # An RHU marked as mixed accepts both recorded licensee genders.
-            if rhu_key == "accepted_genders" and rhu_value and "Mixed" in rhu_value:
-                rhu_value = [*rhu_value, licensee_values["gender"]]
+            if rhu_key == "accepted_genders" and rhu_value:
+                accepted_genders = (
+                    [value.strip() for value in rhu_value.split(",")]
+                    if isinstance(rhu_value, str)
+                    else list(rhu_value)
+                )
+                if any(str(value).casefold() == "mixed" for value in accepted_genders):
+                    rhu_value = [*accepted_genders, licensee_values["gender"]]
             outcome = attribute.matches(
                 licensee_values.get(licensee_key),
                 rhu_value,
