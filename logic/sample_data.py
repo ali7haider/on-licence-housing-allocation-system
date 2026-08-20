@@ -7,62 +7,100 @@ from models.enums import Category, Gender, LicenseeState
 from models.person import Licensee
 from models.rhu import RHU
 
+# Expanded UK English first names with regional diversity
 FIRST_NAMES = [
-    "Adam",
-    "Aisha",
-    "Callum",
-    "Chloe",
-    "Daniel",
-    "Fatima",
-    "Hassan",
-    "Imogen",
-    "Jack",
-    "Jade",
-    "Khalid",
-    "Leah",
-    "Marcus",
-    "Nadia",
-    "Owen",
-    "Priya",
-    "Ryan",
-    "Sana",
-    "Tariq",
-    "Zara",
+    # Traditional English names
+    "James", "William", "Charles", "George", "Thomas", "Henry", "Edward",
+    "John", "Robert", "Richard", "David", "Michael", "Peter", "Paul",
+    "Mary", "Elizabeth", "Margaret", "Anne", "Catherine", "Jane", "Sarah",
+    "Emily", "Emma", "Charlotte", "Sophie", "Olivia", "Amelia", "Jessica",
+    # Scottish names
+    "Hamish", "Fraser", "Dougal", "Alistair", "Iain", "Euan", "Angus",
+    "Isla", "Fiona", "Morag", "Elspeth", "Catriona", "Eilidh", "Ailsa",
+    # Welsh names
+    "Dafydd", "Gareth", "Rhys", "Owain", "Hywel", "Ieuan", "Geraint",
+    "Ceri", "Sian", "Ffion", "Gwen", "Bethan", "Carys", "Eleri",
+    # Northern Irish names
+    "Declan", "Niall", "Rory", "Ciaran", "Aidan", "Brendan", "Eamon",
+    "Ciara", "Maeve", "Orla", "Niamh", "Aoife", "Roisin", "Siobhan",
+    # British Commonwealth influenced
+    "Mohammed", "Zara", "Aisha", "Priya", "Rahul", "Amina", "Sadia",
+    "Kofi", "Adeola", "Taiwo", "Maya", "Rani", "Sofia", "Ismail",
+    # Working class & regional names
+    "Wayne", "Darren", "Craig", "Dean", "Lee", "Gary", "Barry", "Steve",
+    "Tracy", "Donna", "Michelle", "Sharon", "Karen", "Angela", "Paula",
 ]
+
+# Expanded UK English last names with regional distribution
 LAST_NAMES = [
-    "Ahmed",
-    "Ali",
-    "Brown",
-    "Campbell",
-    "Davies",
-    "Edwards",
-    "Green",
-    "Hughes",
-    "Jones",
-    "Khan",
-    "Lewis",
-    "Martin",
-    "Murphy",
-    "Patel",
-    "Robinson",
-    "Smith",
-    "Taylor",
-    "Walker",
-    "White",
-    "Wilson",
+    # Common English surnames
+    "Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson",
+    "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White",
+    "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "Harrison",
+    "Martin", "Thompson", "Morgan", "Cooper", "Anderson", "Hill", "Price",
+    "Baker", "Cox", "Miller", "Parker", "Collins", "Edwards", "Morris",
+    # Scottish surnames
+    "Campbell", "MacDonald", "Robertson", "Stewart", "Murray", "McDonald",
+    "McKenzie", "MacKenzie", "Fraser", "Kennedy", "MacLeod", "Cameron",
+    # Welsh surnames
+    "Davies", "Evans", "Thomas", "Jones", "Williams", "Lewis", "Morgan",
+    "Roberts", "Hughes", "Edwards", "Griffiths", "Price", "Rees",
+    # Northern Irish surnames
+    "O'Brien", "O'Connor", "Ryan", "Murray", "Kelly", "Kennedy", "Walsh",
+    "McGuire", "McIntyre", "Armstrong", "Graham", "Adams", "McDonald",
+    # British aristocracy/landed gentry
+    "Harrington", "Westminster", "Huntingdon", "Sheffield", "Chesterfield",
+    "Dunmore", "Hamilton", "Sutherland", "Richmond", "Windsor",
+    # Occupations (common UK)
+    "Thatcher", "Higgins", "Pritchard", "Pickering", "Whitehead", "Blackwell",
+    "Underwood", "Goodwin", "Oakley", "Bentley", "Clayton", "Sawyer",
 ]
+
 ZONE_TAGS = [
-    "Durham City Centre",
-    "Elm Street School",
-    "Riverside Park",
-    "North Road",
-    "Market Place",
-    "Station District",
-    "University Quarter",
-    "West End",
+    "Durham City Centre", "Elm Street School", "Riverside Park", "North Road",
+    "Market Place", "Station District", "University Quarter", "West End",
+    "Cathedral Quarter", "Old Elvet", "Wharton Park", "Gilesgate",
+    "South Street", "New Inn", "Dragonville", "Aykley Heads",
+    # Additional zones for variety
+    "Shopping District", "Industrial Estate", "Residential Zone", "Business Park",
+    "Leisure Complex", "Community Centre", "Hospital Area", "College Campus",
+    "High Street", "Promenade", "Castle View", "Town Hall Square",
 ]
-MEDICAL_SERVICES = ["GP", "Mental health clinic", "A&E", "Substance misuse service"]
-BUS_ROUTES = ["6", "16", "20", "22", "34A", "X12"]
+
+MEDICAL_SERVICES = [
+    "GP", "Mental health clinic", "A&E", "Substance misuse service",
+    "Dental surgery", "Eye clinic", "Counselling service", "Podiatry",
+    "Physiotherapy", "Community pharmacy", "District nursing",
+    "Eating disorder support", "Prison healthcare", "Sexual health clinic",
+    "Pain management", "Dementia support", "Stroke rehabilitation",
+]
+
+BUS_ROUTES = [
+    "6", "16", "20", "22", "34A", "X12",
+    "1", "2", "4", "7", "8", "10", "11", "12", "14", "15", "18",
+    "21", "23", "24", "25", "27", "28", "29", "30", "35", "36",
+    "40", "42", "43", "45", "50", "55", "60", "62", "64", "66",
+    "X1", "X2", "X5", "X10", "X15", "X20", "X21", "X46",
+    "RAPID 1", "RAPID 2", "EXPRESS", "LINK", "CONNECTOR",
+]
+
+MANAGEMENT_GROUPS = [
+    "North East Support", "Safe Steps", "Community Homes",
+    "Durham Housing Alliance", "Northumbria Care", "Tyne Valley Housing",
+    "Wear Valley Support", "Teesside Foundation", "County Durham Homes",
+    "Cleveland Community Trust", "North East Housing Group",
+    "Home North East", "Durham Wellbeing Centre", "The Riverside Group",
+    "Twelve Housing", "First Steps Housing", "Foundations NE",
+]
+
+PRISON_NAMES = [
+    "HMP Durham", "HMP Frankland", "HMP Low Newton",
+    "HMP Holme House", "HMP Kirklevington", "HMP Northumberland",
+    "HMP Deerbolt", "HMP Acklington", "HMP Wealstun",
+    "HMP Wandsworth", "HMP Belmarsh", "HMP Pentonville",
+    "HMP Brixton", "HMP Wormwood Scrubs", "HMP Leeds",
+    "HMP Hull", "HMP Wakefield", "HMP Nottingham",
+]
 
 
 def generate_sample_data(
@@ -84,20 +122,26 @@ def generate_sample_data(
 def _generate_rhus(random: Random, count: int) -> list[RHU]:
     """Create a small, varied collection of fictional hostels."""
     rhus: list[RHU] = []
+    
+    # Use UK place names for variety
+    places = ["Durham", "Chester-le-Street", "Consett", "Stanley", "Spennymoor", 
+              "Newton Aycliffe", "Bishop Auckland", "Darlington", "Stockton", 
+              "Middlesbrough", "Sunderland", "Newcastle", "Gateshead", 
+              "Washington", "South Shields"]
+    
     for number in range(1, count + 1):
+        place = random.choice(places)
         accepted_genders = random.choice(
             [[Gender.MALE.value], [Gender.FEMALE.value], [Gender.MIXED.value]]
         )
         rhus.append(
             RHU(
-                name=f"Durham RHU {number}",
-                address=f"{number * 10} Example Road, Durham, DH{number} 1AA",
-                phone=f"0191 555 {number:04d}",
+                name=f"{place} RHU {random.choice(['Lodge', 'House', 'Centre', 'Residence', 'Place'])}",
+                address=f"{number * 10} {random.choice(['Main', 'Station', 'Church', 'Market', 'North', 'South', 'East', 'West'])} Road, {place}, DH{number} 1AA",
+                phone=f"0191 {random.randint(200, 999)} {random.randint(1000, 9999)}",
                 email=f"rhu{number}@example.org",
-                management_group=random.choice(
-                    ["North East Support", "Safe Steps", "Community Homes"]
-                ),
-                contact_name=f"Manager {number}",
+                management_group=random.choice(MANAGEMENT_GROUPS),
+                contact_name=f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}",
                 cost_per_bed_per_day=round(random.uniform(55, 115), 2),
                 capacity=random.randint(55, 85),
                 emergency_capacity=random.randint(2, 8),
@@ -124,10 +168,10 @@ def _generate_rhus(random: Random, count: int) -> list[RHU]:
                     "transport_links": random.sample(
                         BUS_ROUTES, k=random.randint(1, 4)
                     ),
-                    "nearby_zones": random.sample(ZONE_TAGS, k=random.randint(0, 2)),
+                    "nearby_zones": random.sample(ZONE_TAGS, k=random.randint(0, 3)),
                     "digital_monitoring_support": random.choice([True, False]),
                     "peer_environment": random.choice(
-                        ["Low conflict", "Structured", "High support"]
+                        ["Low conflict", "Structured", "High support", "Mixed"]
                     ),
                 },
             )
@@ -142,24 +186,27 @@ def _generate_licensees(random: Random, count: int, rhus: list[RHU]) -> list[Lic
     available_rhus = [rhu for rhu in rhus]
 
     for number in range(1, count + 1):
+        # Generate more realistic age distributions
         state = random.choices(
             [LicenseeState.PENDING, LicenseeState.ALLOCATED, LicenseeState.EXITED],
             weights=[55, 20, 25],
             k=1,
         )[0]
         gender = random.choice([Gender.MALE, Gender.FEMALE])
-        release_date = today + timedelta(days=random.randint(-120, 180))
+        
+        # Realistic release date distribution (more likely to be recent)
+        release_date = today + timedelta(days=random.randint(-180, 90))
         licence_end_date = release_date + timedelta(days=random.choice([90, 180, 365]))
+        
+        # Create licensee with weighted attributes for more realistic data
         licensee = Licensee(
             name=f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}",
-            home_address=f"{random.randint(1, 220)} Sample Street, County Durham",
+            home_address=f"{random.randint(1, 220)} {random.choice(['Main', 'Station', 'Church', 'Park', 'North', 'South', 'East', 'West'])} Street, County Durham",
             gender=gender,
             prison_role_id=f"PR-{number:05d}",
             release_date=release_date,
             licence_end_date=licence_end_date,
-            current_location=random.choice(
-                ["HMP Durham", "HMP Frankland", "HMP Low Newton"]
-            ),
+            current_location=random.choice(PRISON_NAMES),
             category=random.choice(list(Category)),
             state=state,
             notes="Fictional development record.",
@@ -174,7 +221,7 @@ def _generate_licensees(random: Random, count: int, rhus: list[RHU]) -> list[Lic
                 "exclusion_zones": random.sample(ZONE_TAGS, k=random.randint(0, 2)),
                 "digital_monitoring_required": random.choice([True, False]),
                 "peer_environment_need": random.choice(
-                    ["Low conflict", "Structured", "High support"]
+                    ["Low conflict", "Structured", "High support", "Mixed"]
                 ),
             },
         )
