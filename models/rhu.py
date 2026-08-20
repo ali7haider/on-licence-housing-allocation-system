@@ -24,3 +24,4 @@ class RHU:
     resident_ids: list[str] = field(default_factory=list)
     total_owed: float = 0.0
     last_payment_date: date = field(default_factory=date.today)
+    

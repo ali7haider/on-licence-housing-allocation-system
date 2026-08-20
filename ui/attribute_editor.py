@@ -15,11 +15,44 @@ from PySide6.QtWidgets import (
 )
 
 from models.attributes import MatchAttribute, TextAttribute, YesNoAttribute, ZoneAttribute
+from models.enums import Category, Gender
 
+# Attributes with a small, fixed set of valid values get checkboxes instead
+# of free text, so a typo (e.g. "Femal") can't silently break matching.
+CHOICE_ATTRIBUTE_OPTIONS: dict[str, list[str]] = {
+    "categories": [category.value for category in Category],
+    "accepted_genders": [gender.value for gender in Gender],
+}
 
 AttributeDefinition = tuple[str, MatchAttribute]
 
+class ChoiceSetWidget(QWidget):
+    """A fixed set of checkboxes for choosing one or more known options."""
 
+    def __init__(self, options: Iterable[str], parent: QWidget | None = None) -> None:
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.checkboxes: dict[str, QCheckBox] = {}
+        for option in options:
+            checkbox = QCheckBox(option)
+            self.checkboxes[option] = checkbox
+            layout.addWidget(checkbox)
+
+    def values(self) -> list[str]:
+        """Return the checked option labels."""
+        return [option for option, checkbox in self.checkboxes.items() if checkbox.isChecked()]
+
+    def set_values(self, value: object) -> None:
+        """Check the boxes matching a string or iterable of option labels."""
+        if isinstance(value, str):
+            selected = {item.strip().casefold() for item in value.split(",")}
+        elif isinstance(value, Iterable):
+            selected = {str(item).casefold() for item in value}
+        else:
+            selected = set()
+        for option, checkbox in self.checkboxes.items():
+            checkbox.setChecked(option.casefold() in selected)
 class TagListWidget(QWidget):
     """A small add/remove tag editor used for exclusion-zone values."""
 
@@ -92,15 +125,17 @@ class AttributeEditor(QWidget):
 
         form = QFormLayout(self)
         for key, attribute in self.definitions:
-            input_widget = self._create_input(attribute)
+            input_widget = self._create_input(key, attribute)
             self.inputs[key] = input_widget
             if isinstance(input_widget, QCheckBox):
                 form.addRow(input_widget)
             else:
                 form.addRow(QLabel(attribute.label), input_widget)
 
-    def _create_input(self, attribute: MatchAttribute) -> QWidget:
-        """Choose the appropriate Qt input from an attribute's concrete type."""
+    def _create_input(self, key: str, attribute: MatchAttribute) -> QWidget:
+        """Choose the appropriate Qt input, preferring known choice sets."""
+        if key in CHOICE_ATTRIBUTE_OPTIONS:
+            return ChoiceSetWidget(CHOICE_ATTRIBUTE_OPTIONS[key])
         if isinstance(attribute, YesNoAttribute):
             return QCheckBox(attribute.label)
         if isinstance(attribute, ZoneAttribute):
@@ -115,8 +150,8 @@ class AttributeEditor(QWidget):
             value = values.get(key)
             if isinstance(input_widget, QCheckBox):
                 input_widget.setChecked(bool(value))
-            elif isinstance(input_widget, TagListWidget):
-                input_widget.set_tags(value)
+            elif isinstance(input_widget, (TagListWidget, ChoiceSetWidget)):
+                input_widget.set_tags(value) if isinstance(input_widget, TagListWidget) else input_widget.set_values(value)
             elif isinstance(input_widget, QLineEdit):
                 input_widget.setText(_display_text(value))
 
@@ -128,6 +163,8 @@ class AttributeEditor(QWidget):
                 collected[key] = input_widget.isChecked()
             elif isinstance(input_widget, TagListWidget):
                 collected[key] = input_widget.tags()
+            elif isinstance(input_widget, ChoiceSetWidget):
+                collected[key] = input_widget.values()
             elif isinstance(input_widget, QLineEdit):
                 collected[key] = input_widget.text().strip()
         return collected

@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -21,6 +22,7 @@ from logic.data_store import DataStore
 from models.enums import LicenseeState
 from models.person import Licensee
 from ui.licensee_editor import LicenseeEditor
+from PySide6.QtCore import Qt, Signal
 
 
 class StateListWidget(QListWidget):
@@ -57,7 +59,7 @@ class StateListWidget(QListWidget):
 
 class LicenseeListView(QWidget):
     """Display pending, allocated, and exited licensees in sortable columns."""
-
+    record_changed = Signal() 
     def __init__(self, data_store: DataStore, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self.data_store = data_store
@@ -140,18 +142,23 @@ class LicenseeListView(QWidget):
 
     def _move_licensees(self, prison_role_ids: list[str], state: LicenseeState) -> None:
         """Apply a dropped column's state to its licensees and redraw the board."""
+        blocked: list[str] = []
         for prison_role_id in prison_role_ids:
-            licensee = self.data_store.get_licensee(prison_role_id)
-            if licensee is not None:
-                licensee.state = state
-                self.data_store.update_licensee(licensee)
+            try:
+                self.data_store.transition_licensee_state(prison_role_id, state)
+            except (KeyError, ValueError) as error:
+                blocked.append(str(error))
+        if blocked:
+            QMessageBox.warning(self, "Could not move licensee", "\n".join(blocked))
         self.refresh()
+        self.record_changed.emit()
 
     def _open_add_editor(self) -> None:
         """Open an empty editor and redraw after a successful save."""
         editor = LicenseeEditor(self.data_store, parent=self)
         if editor.exec():
             self.refresh()
+            self.record_changed.emit()
 
     def _open_edit_editor(self, item: QListWidgetItem) -> None:
         """Open the selected licensee for editing when its item is double-clicked."""
@@ -161,3 +168,4 @@ class LicenseeListView(QWidget):
         editor = LicenseeEditor(self.data_store, licensee, parent=self)
         if editor.exec():
             self.refresh()
+            self.record_changed.emit()

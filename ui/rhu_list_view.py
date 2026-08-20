@@ -68,9 +68,9 @@ class RHUListView(QWidget):
             rhu_item = QTreeWidgetItem(
                 [
                     rhu.name,
-                    str(len(rhu.resident_ids)),
                     f"£{rhu.cost_per_bed_per_day:.2f}",
                     f"{len(rhu.resident_ids)}/{rhu.capacity}",
+                    "",
                     rhu.contact_name or rhu.phone,
                 ]
             )
@@ -83,7 +83,7 @@ class RHUListView(QWidget):
                     else "not set"
                 )
                 resident_item = QTreeWidgetItem(
-                    [f"  {resident.name} ({resident.prison_role_id})", "", "", f"Exit: {exit_text}", ""]
+                    [f"{resident.name} ({resident.prison_role_id})", "", "", exit_text, ""]
                 )
                 rhu_item.addChild(resident_item)
         self.rhu_tree.resizeColumnToContents(0)

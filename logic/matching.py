@@ -2,7 +2,13 @@
 
 from collections.abc import Iterable
 
-from models.attributes import MatchAttribute, TextAttribute, YesNoAttribute, ZoneAttribute
+from models.attributes import (
+    HardRequirementAttribute,
+    MatchAttribute,
+    TextAttribute,
+    YesNoAttribute,
+    ZoneAttribute,
+)
 from models.person import Licensee
 from models.rhu import RHU
 
@@ -11,16 +17,40 @@ from models.rhu import RHU
 # The same ``matches`` call is used for every rule; the concrete rule class decides
 # how its two values should be compared.
 MATCHING_RULES: tuple[tuple[str, str, MatchAttribute], ...] = (
-    ("category", "categories", TextAttribute("Category", 20, True)),
-    ("gender", "accepted_genders", TextAttribute("Gender", 20, True)),
+    # -- Hard requirements: a mismatch disqualifies the RHU in practice, so
+    # it is scored far below any combination of soft-preference matches
+    # while still being shown (sorted, not filtered — per the AO).
+    ("category", "categories", HardRequirementAttribute("Category", 20)),
+    ("gender", "accepted_genders", HardRequirementAttribute("Gender", 20)),
+
+    # -- Conditions / restrictions
     ("night_curfew", "night_curfew", YesNoAttribute("Nighttime curfew", 10)),
     ("weekend_curfew", "weekend_curfew", YesNoAttribute("Weekend curfew", 10)),
     ("drug_searches_required", "drug_searches", YesNoAttribute("Drug searches", 10)),
+    ("accessibility_required", "physical_accessibility", YesNoAttribute("Physical accessibility", 10)),
+    ("is_young_offender", "young_offenders", YesNoAttribute("Young offender suitability", 10)),
+
+    # -- Services / preferences
     ("medical_needs", "medical_services", TextAttribute("Medical services", 8)),
     ("transport_needs", "transport_links", TextAttribute("Transport links", 6)),
-    ("digital_monitoring_required", "digital_monitoring_support", YesNoAttribute("Digital monitoring", 8)),
-    ("peer_environment_need", "peer_environment", TextAttribute("Peer environment", 6)),
+
+    # -- Location / safety
     ("exclusion_zones", "nearby_zones", ZoneAttribute("Exclusion zones", 50)),
+
+    # -- Student Suggested 1: whether the RHU can support a licensee who is
+    # on electronic/digital monitoring.
+    ("digital_monitoring_required", "digital_monitoring_support",
+     YesNoAttribute("Digital monitoring support (Student Suggested 1)", 8)),
+
+    # -- Student Suggested 2: matches a licensee's need for a particular
+    # peer environment (low conflict / structured / high support) to the
+    # RHU's environment.
+    ("peer_environment_need", "peer_environment",
+     TextAttribute("Peer environment (Student Suggested 2)", 6)),
+
+    # -- Future Expansion 1-3: reserved for criteria the AO may add later.
+    # Add a (licensee_key, rhu_key, MatchAttribute) tuple here — no other
+    # code needs to change, since rank_rhus_for() iterates this tuple.
 )
 
 

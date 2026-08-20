@@ -185,6 +185,12 @@ class AllocationView(QWidget):
         self.data_store.update_licensee(licensee)
         self._rank_selected_licensee()
 
+    def _selected_rhu_warnings(self) -> str:
+        """Return the warnings text shown for the currently selected RHU row."""
+        row = self.ranking_table.currentRow()
+        item = self.ranking_table.item(row, 3) if row >= 0 else None
+        return item.text() if item is not None else ""
+
     def _allocate_selected_rhu(self) -> None:
         """Allocate or transfer the licensee into the selected RHU."""
         licensee = self._selected_licensee()
@@ -195,26 +201,19 @@ class AllocationView(QWidget):
         if rhu is None:
             return
 
+        warnings = self._selected_rhu_warnings()
+        if warnings and warnings != "No conflict warnings":
+            response = QMessageBox.question(
+                self,
+                "Confirm allocation despite warnings",
+                f"{rhu.name} has the following warning(s):\n\n{warnings}\n\n"
+                "Allocate this licensee here anyway?",
+            )
+            if response != QMessageBox.StandardButton.Yes:
+                return
+
         is_new_resident = licensee.prison_role_id not in rhu.resident_ids
         maximum_capacity = rhu.capacity + rhu.emergency_capacity
         if is_new_resident and len(rhu.resident_ids) >= maximum_capacity:
             QMessageBox.warning(self, "No bed available", "This RHU has no standard or emergency bed available.")
             return
-
-        if licensee.current_rhu_name and licensee.current_rhu_name != rhu.name:
-            previous_rhu = self.data_store.get_rhu(licensee.current_rhu_name)
-            if previous_rhu and licensee.prison_role_id in previous_rhu.resident_ids:
-                previous_rhu.resident_ids.remove(licensee.prison_role_id)
-                self.data_store.update_rhu(previous_rhu)
-
-        if is_new_resident:
-            rhu.resident_ids.append(licensee.prison_role_id)
-        licensee.current_rhu_name = rhu.name
-        licensee.state = LicenseeState.ALLOCATED
-        if licensee.housing_exit_date is None:
-            licensee.housing_exit_date = licensee.licence_end_date
-
-        self.data_store.update_licensee(licensee)
-        self.data_store.update_rhu(rhu)
-        self._rank_selected_licensee()
-        self.allocation_changed.emit()

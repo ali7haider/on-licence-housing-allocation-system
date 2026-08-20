@@ -79,7 +79,32 @@ class ZoneAttribute(MatchAttribute):
         if excluded_zones:
             return MatchOutcome(self.weight, f"{self.label}: no zone conflict")
         return MatchOutcome(0, f"{self.label}: no exclusion zone recorded")
+class HardRequirementAttribute(MatchAttribute):
+    """Match an absolute requirement, such as gender or security category.
 
+    A mismatch means the RHU cannot lawfully or safely house this licensee
+    at all. The penalty is large enough that no combination of soft
+    preference matches can outweigh it — the RHU still appears in the
+    ranked list (the AO asked for sorting, not filtering) but always sinks
+    to the bottom.
+    """
+
+    DISQUALIFYING_PENALTY = 1_000
+
+    def matches(self, licensee_value: object, rhu_value: object) -> MatchOutcome:
+        wanted = _normalise_values(licensee_value)
+        available = _normalise_values(rhu_value)
+        if not wanted:
+            return MatchOutcome(0, f"{self.label}: no requirement recorded")
+        shared_values = wanted & available
+        if shared_values:
+            display_values = ", ".join(sorted(shared_values))
+            return MatchOutcome(self.weight, f"{self.label}: matches {display_values}")
+        return MatchOutcome(
+            -self.DISQUALIFYING_PENALTY,
+            f"{self.label}: RHU cannot accommodate this requirement",
+            True,
+        )
 
 @dataclass
 class AttributeValue:

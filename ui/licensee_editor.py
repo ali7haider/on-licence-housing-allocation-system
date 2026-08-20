@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPlainTextEdit,
+    QPushButton,
     QVBoxLayout,
     QWidget,
 )
@@ -86,6 +87,10 @@ class LicenseeEditor(QDialog):
         buttons.accepted.connect(self._save)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+        if self.licensee is not None:
+            delete_button = QPushButton("Delete licensee")
+            delete_button.clicked.connect(self._delete)
+            layout.addWidget(delete_button)
 
     def _load_licensee(self, licensee: Licensee) -> None:
         """Populate the form while preserving the existing record identity."""
@@ -136,6 +141,18 @@ class LicenseeEditor(QDialog):
             QMessageBox.warning(self, "Could not save licensee", str(error))
             return
         self.accept()
+    def _delete(self) -> None:
+        """Confirm, then remove this licensee and close the editor as changed."""
+        assert self.licensee is not None
+        confirm = QMessageBox.question(
+            self,
+            "Delete licensee",
+            f"Delete {self.licensee.name} ({self.licensee.prison_role_id})? "
+            "This cannot be undone.",
+        )
+        if confirm == QMessageBox.StandardButton.Yes:
+            self.data_store.delete_licensee(self.licensee.prison_role_id)
+            self.accept()
 
 
 def _enum_combo(enum_type: type[Gender] | type[Category] | type[LicenseeState]) -> QComboBox:
