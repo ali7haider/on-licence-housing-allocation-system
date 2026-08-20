@@ -19,7 +19,6 @@ from PySide6.QtWidgets import (
 
 from logic.data_store import DataStore
 from logic.matching import rank_rhus_for
-from models.enums import LicenseeState
 from models.person import Licensee
 
 
@@ -217,3 +216,12 @@ class AllocationView(QWidget):
         if is_new_resident and len(rhu.resident_ids) >= maximum_capacity:
             QMessageBox.warning(self, "No bed available", "This RHU has no standard or emergency bed available.")
             return
+
+        try:
+            self.data_store.allocate_licensee(licensee.prison_role_id, rhu.name)
+        except (KeyError, ValueError) as error:
+            QMessageBox.warning(self, "Could not allocate licensee", str(error))
+            return
+        QMessageBox.information(self, "Allocation saved", f"{licensee.name} is allocated to {rhu.name}.")
+        self._rank_selected_licensee()
+        self.allocation_changed.emit()

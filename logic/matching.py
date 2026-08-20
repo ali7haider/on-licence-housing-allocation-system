@@ -33,9 +33,20 @@ MATCHING_RULES: tuple[tuple[str, str, MatchAttribute], ...] = (
     # -- Services / preferences
     ("medical_needs", "medical_services", TextAttribute("Medical services", 8)),
     ("transport_needs", "transport_links", TextAttribute("Transport links", 6)),
+    ("disability_needs", "disability_support", TextAttribute("Disability support", 8)),
+    ("mental_health_needs", "mental_health_support", TextAttribute("Mental health support", 8)),
+    ("cultural_needs", "cultural_support", TextAttribute("Cultural or religious support", 6)),
+    ("employment_needs", "employment_support", TextAttribute("Employment or training", 6)),
+    ("family_access_needs", "family_access", TextAttribute("Family access", 5)),
+    ("offending_triggers", "trigger_avoidance", TextAttribute("Offending trigger avoidance", 8)),
+    ("licence_period", "allowed_licence_periods", TextAttribute("Licence period", 5)),
 
     # -- Location / safety
     ("exclusion_zones", "nearby_zones", ZoneAttribute("Exclusion zones", 50)),
+    ("victim_exclusion_zones", "nearby_victim_zones", ZoneAttribute("Victim exclusion zones", 50)),
+    ("school_exclusion_zones", "nearby_school_zones", ZoneAttribute("School exclusion zones", 50)),
+    ("associate_exclusion_zones", "nearby_associate_zones", ZoneAttribute("Associate exclusion zones", 40)),
+    ("prior_rhu_experience", "prior_rhu_experience", TextAttribute("Prior RHU experience", 4)),
 
     # -- Student Suggested 1: whether the RHU can support a licensee who is
     # on electronic/digital monitoring.
@@ -47,6 +58,10 @@ MATCHING_RULES: tuple[tuple[str, str, MatchAttribute], ...] = (
     # RHU's environment.
     ("peer_environment_need", "peer_environment",
      TextAttribute("Peer environment (Student Suggested 2)", 6)),
+
+    ("future_expansion_1", "future_expansion_1", TextAttribute("Future Expansion 1", 3)),
+    ("future_expansion_2", "future_expansion_2", TextAttribute("Future Expansion 2", 3)),
+    ("future_expansion_3", "future_expansion_3", TextAttribute("Future Expansion 3", 3)),
 
     # -- Future Expansion 1-3: reserved for criteria the AO may add later.
     # Add a (licensee_key, rhu_key, MatchAttribute) tuple here — no other

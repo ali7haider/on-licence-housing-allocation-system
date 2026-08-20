@@ -121,6 +121,37 @@ class DataStore:
             if name in licensee.shortlist:
                 licensee.shortlist.remove(name)
         del self.rhus[self._rhu_index(name)]
+
+    def allocate_licensee(self, prison_role_id: str, rhu_name: str) -> None:
+        """Allocate or transfer a licensee while keeping both records consistent."""
+        licensee = self.get_licensee(prison_role_id)
+        rhu = self.get_rhu(rhu_name)
+        if licensee is None:
+            raise KeyError(f"No licensee with ID {prison_role_id} exists.")
+        if rhu is None:
+            raise KeyError(f"No RHU named {rhu_name} exists.")
+        if licensee.current_rhu_name == rhu.name:
+            licensee.state = LicenseeState.ALLOCATED
+            return
+        if len(rhu.resident_ids) >= rhu.capacity + rhu.emergency_capacity:
+            raise ValueError(f"{rhu.name} has no standard or emergency bed available.")
+        if licensee.current_rhu_name:
+            self._release_rhu_link(licensee)
+        rhu.resident_ids.append(licensee.prison_role_id)
+        licensee.current_rhu_name = rhu.name
+        licensee.state = LicenseeState.ALLOCATED
+
+    def record_incident(self, rhu_name: str, prison_role_id: str, details: str) -> None:
+        """Record or replace a violence or disturbance report for a resident."""
+        rhu = self.get_rhu(rhu_name)
+        if rhu is None:
+            raise KeyError(f"No RHU named {rhu_name} exists.")
+        if prison_role_id not in rhu.resident_ids:
+            raise ValueError("The licensee is not currently resident in this RHU.")
+        if details.strip():
+            rhu.incidents[prison_role_id] = details.strip()
+        else:
+            rhu.incidents.pop(prison_role_id, None)
     def list_rhus(self) -> list[RHU]:
         """Return all RHUs without exposing the internal list."""
         return list(self.rhus)

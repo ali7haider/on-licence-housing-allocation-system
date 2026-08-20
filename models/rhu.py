@@ -22,6 +22,7 @@ class RHU:
     notes: str = ""
     attributes: dict[str, object] = field(default_factory=dict)
     resident_ids: list[str] = field(default_factory=list)
+    incidents: dict[str, str] = field(default_factory=dict)
     total_owed: float = 0.0
     last_payment_date: date = field(default_factory=date.today)
     

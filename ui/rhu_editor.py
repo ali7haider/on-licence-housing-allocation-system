@@ -130,6 +130,7 @@ class RHUEditor(QDialog):
             notes=self.notes_input.toPlainText().strip(),
             attributes=self.attribute_editor.values(),
             resident_ids=list(existing.resident_ids) if existing else [],
+            incidents=dict(existing.incidents) if existing else {},
             total_owed=existing.total_owed if existing else 0.0,
             last_payment_date=existing.last_payment_date if existing else date.today(),
         )
