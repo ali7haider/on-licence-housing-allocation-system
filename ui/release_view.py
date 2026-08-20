@@ -94,7 +94,7 @@ class ReleaseListView(QWidget):
                 )
                 resident_item.setData(0, Qt.ItemDataRole.UserRole, resident.prison_role_id)
                 rhu_item.addChild(resident_item)
-            rhu_item.setExpanded(True)
+            rhu_item.setExpanded(False)
         self.release_tree.resizeColumnToContents(0)
 
     def _open_date_editor(self, item: QTreeWidgetItem, _: int) -> None:

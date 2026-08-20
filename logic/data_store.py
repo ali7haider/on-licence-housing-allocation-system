@@ -67,10 +67,20 @@ class DataStore:
     def delete_licensee(self, prison_role_id: str) -> None:
         """Remove a licensee by prison role ID, releasing their RHU bed first."""
         licensee = self.get_licensee(prison_role_id)
+        previous_state = licensee.state.value if licensee is not None else None
+        previous_rhu = licensee.current_rhu_name if licensee is not None else None
         if licensee is not None and licensee.current_rhu_name:
             self._release_rhu_link(licensee)
         del self.licensees[self._licensee_index(prison_role_id)]
-        self.audit_events.append(AuditEvent(datetime.now(), prison_role_id, "Licensee deleted"))
+        self.audit_events.append(
+            AuditEvent(
+                datetime.now(),
+                prison_role_id,
+                "Licensee deleted",
+                from_state=previous_state,
+                from_rhu=previous_rhu,
+            )
+        )
 
     def transition_licensee_state(self, prison_role_id: str, new_state: LicenseeState) -> None:
         """Move a licensee between Pending / Allocated / Exited.
@@ -167,8 +177,19 @@ class DataStore:
         """Remove an RHU, freeing residents and clearing shortlist references."""
         for licensee in self.licensees:
             if licensee.current_rhu_name == name:
+                previous_state = licensee.state
                 self._release_rhu_link(licensee)
                 licensee.state = LicenseeState.PENDING
+                self.audit_events.append(
+                    AuditEvent(
+                        datetime.now(),
+                        licensee.prison_role_id,
+                        "Licensee status or placement updated",
+                        from_state=previous_state.value,
+                        to_state=licensee.state.value,
+                        from_rhu=name,
+                    )
+                )
             if name in licensee.shortlist:
                 licensee.shortlist.remove(name)
         del self.rhus[self._rhu_index(name)]
