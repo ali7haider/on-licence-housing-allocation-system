@@ -65,6 +65,8 @@ def _generate_rhus(random: Random, count: int) -> list[RHU]:
                     "categories": random.sample([category.value for category in Category], k=random.randint(1, 3)),
                     "accepted_genders": accepted_genders,
                     "drug_searches": random.choice([True, False]),
+                    "night_curfew": random.choice([True, False]),
+                    "weekend_curfew": random.choice([True, False]),
                     "physical_accessibility": random.choice([True, False]),
                     "young_offenders": random.choice([True, False]),
                     "medical_services": random.sample(MEDICAL_SERVICES, k=random.randint(1, 3)),
